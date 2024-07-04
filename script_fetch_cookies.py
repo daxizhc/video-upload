@@ -1,9 +1,9 @@
 import asyncio
 
-import douyin.fetcher
+import video_upload.douyin.fetcher as fetcher
 
 if __name__ == '__main__':
-    asyncio.run(douyin.fetcher.fetch_cookies())
+    asyncio.run(fetcher.fetch_cookies())
 
 
 
