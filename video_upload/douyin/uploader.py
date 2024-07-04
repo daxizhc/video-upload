@@ -20,26 +20,12 @@ async def upload_video(video: Video):
         await upload_video_and_enter_publish_page(page, video)
         # 设置标题和话题
         await set_title_and_tags(page, video)
-        # 定时发布
+        # 设置定时发布
         await set_publish_time(page, video)
+        # 点击发布
+        await publish_video(page)
 
-        # 判断视频是否发布成功
-        while True:
-            # 判断视频是否发布成功
-            try:
-                publish_button = page.get_by_role('button', name="发布", exact=True)
-                if await publish_button.count():
-                    await publish_button.click()
-                await page.wait_for_url("https://creator.douyin.com/creator-micro/content/manage",
-                                        timeout=1500)  # 如果自动跳转到作品页面，则代表发布成功
-                print("  [-]视频发布成功")
-                break
-            except:
-                print("  [-] 视频正在发布中...")
-                await page.screenshot(full_page=True)
-                await asyncio.sleep(0.5)
-
-        # await context.storage_state(path=self.account_file)  # 保存cookie
+        await context.storage_state(path=Path(Path(__file__).parent.resolve() / "cookies.json"))  # 保存cookie
         print('  [-]cookie更新完毕！')
         await asyncio.sleep(2)  # 这里延迟是为了方便眼睛直观的观看
         # 关闭浏览器上下文和浏览器实例
@@ -91,7 +77,6 @@ async def set_title_and_tags(page, video: Video):
         await page.press(css_selector, "Space")
 
 
-
 async def set_publish_time(page, video: Video):
     if video.publish_time is not None:
         # 选择包含特定文本内容的 label 元素
@@ -108,6 +93,24 @@ async def set_publish_time(page, video: Video):
         await page.keyboard.press("Enter")
 
         await asyncio.sleep(1)
+
+
+async def publish_video(page):
+    # 判断视频是否发布成功
+    while True:
+        # 判断视频是否发布成功
+        try:
+            publish_button = page.get_by_role('button', name="发布", exact=True)
+            if await publish_button.count():
+                await publish_button.click()
+            await page.wait_for_url("https://creator.douyin.com/creator-micro/content/manage",
+                                    timeout=1500)  # 如果自动跳转到作品页面，则代表发布成功
+            print("  [-]视频发布成功")
+            break
+        except:
+            print("  [-] 视频正在发布中...")
+            await page.screenshot(full_page=True)
+            await asyncio.sleep(0.5)
 
 
 async def auth_cookies():
