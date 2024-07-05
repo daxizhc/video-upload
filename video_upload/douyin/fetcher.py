@@ -4,6 +4,8 @@ from pathlib import Path
 import logging
 from playwright.async_api import async_playwright
 
+from video_upload.constants import DOUYIN_HOME_PAGE
+
 logger = logging.getLogger("douyin-uploader")
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -12,7 +14,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 async def fetch_cookies():
     async with async_playwright() as playwright:
         options = {
-            'headless': False
+            'headless': True
         }
 
         browser = await playwright.chromium.launch(**options)
@@ -25,7 +27,7 @@ async def fetch_cookies():
         await page.goto(url="https://creator.douyin.com/", timeout=20000)
         logger.info("打开登录页面成功")
 
-        while 'https://creator.douyin.com/creator-micro/home' not in page.url:
+        while DOUYIN_HOME_PAGE not in page.url:
             logger.info("等待登录...")
             await asyncio.sleep(5)
 

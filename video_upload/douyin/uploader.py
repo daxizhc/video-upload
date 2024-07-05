@@ -3,6 +3,7 @@ from pathlib import Path
 
 from playwright.async_api import async_playwright
 
+from video_upload.constants import DOUYIN_UPLOAD_PAGE, DOUYIN_HOME_PAGE, DOUYIN_CONTENT_PAGE, DOUYIN_PUBLISH_PAGE
 from video_upload.errors import VideoUploadError
 from video_upload.model import Video
 
@@ -11,7 +12,7 @@ async def upload_video(video: Video):
     await auth_cookies()
 
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch(headless=False)
+        browser = await playwright.chromium.launch(headless=True)
         context = await browser.new_context(storage_state=Path(Path(__file__).parent.resolve() / "cookies.json"))
 
         # 创建一个新的页面
@@ -36,8 +37,8 @@ async def upload_video(video: Video):
 
 async def upload_video_and_enter_publish_page(page, video: Video):
     # 访问指定的 URL
-    await page.goto("https://creator.douyin.com/creator-micro/content/upload")
-    await page.wait_for_url("https://creator.douyin.com/creator-micro/content/upload")
+    await page.goto(DOUYIN_UPLOAD_PAGE)
+    await page.wait_for_url(DOUYIN_UPLOAD_PAGE)
     # 点击 "上传视频" 按钮
     await page.locator(".upload-btn--9eZLd").set_input_files(video.video_path)
 
@@ -45,8 +46,7 @@ async def upload_video_and_enter_publish_page(page, video: Video):
     while True:
         # 判断是是否进入视频发布页面，没进入，则自动等待到超时
         try:
-            await page.wait_for_url(
-                "https://creator.douyin.com/creator-micro/content/publish?enter_from=publish_page")
+            await page.wait_for_url(DOUYIN_PUBLISH_PAGE)
             break
         except:
             print("正在等待进入视频发布页面...")
@@ -103,7 +103,7 @@ async def publish_video(page):
             publish_button = page.get_by_role('button', name="发布", exact=True)
             if await publish_button.count():
                 await publish_button.click()
-            await page.wait_for_url("https://creator.douyin.com/creator-micro/content/manage",
+            await page.wait_for_url(DOUYIN_CONTENT_PAGE,
                                     timeout=1500)  # 如果自动跳转到作品页面，则代表发布成功
             print("  [-]视频发布成功")
             break
@@ -120,9 +120,9 @@ async def auth_cookies():
         # 创建一个新的页面
         page = await context.new_page()
         # 访问指定的 URL
-        await page.goto("https://creator.douyin.com/creator-micro/home")
+        await page.goto(DOUYIN_HOME_PAGE)
 
-        if "https://creator.douyin.com/creator-micro/home" not in page.url:
+        if DOUYIN_HOME_PAGE not in page.url:
             raise VideoUploadError("cookies invalid")
 
         await context.close()
