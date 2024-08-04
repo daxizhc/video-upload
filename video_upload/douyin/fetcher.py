@@ -14,7 +14,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 async def fetch_cookies():
     async with async_playwright() as playwright:
         options = {
-            'headless': True
+            'headless': False
         }
 
         browser = await playwright.chromium.launch(**options)

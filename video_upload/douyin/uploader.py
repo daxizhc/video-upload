@@ -3,7 +3,8 @@ from pathlib import Path
 
 from playwright.async_api import async_playwright
 
-from video_upload.constants import DOUYIN_UPLOAD_PAGE, DOUYIN_HOME_PAGE, DOUYIN_CONTENT_PAGE, DOUYIN_PUBLISH_PAGE
+from video_upload.constants import DOUYIN_UPLOAD_PAGE, DOUYIN_HOME_PAGE, DOUYIN_PUBLISH_PAGE, \
+    DOUYIN_PUBLISH_FINISH_PAGE
 from video_upload.errors import VideoUploadError
 from video_upload.model import Video
 
@@ -89,7 +90,7 @@ async def set_publish_time(page, video: Video):
         await asyncio.sleep(1)
         await page.locator('.semi-input[placeholder="日期和时间"]').click()
         await page.keyboard.press("Control+KeyA")
-        await page.keyboard.type(str(publish_date_hour))
+        await page.keyboard.type(str(publish_date_hour))  # 定时发布最早也要2h以后
         await page.keyboard.press("Enter")
 
         await asyncio.sleep(1)
@@ -103,7 +104,7 @@ async def publish_video(page):
             publish_button = page.get_by_role('button', name="发布", exact=True)
             if await publish_button.count():
                 await publish_button.click()
-            await page.wait_for_url(DOUYIN_CONTENT_PAGE,
+            await page.wait_for_url(DOUYIN_PUBLISH_FINISH_PAGE,
                                     timeout=1500)  # 如果自动跳转到作品页面，则代表发布成功
             print("  [-]视频发布成功")
             break
